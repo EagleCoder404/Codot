@@ -3,13 +3,12 @@ from sys import excepthook
 
 from sqlalchemy.orm import backref
 from api import db, auth, app
-from flask import g
+from flask import g, make_response
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 
 @auth.verify_password
 def verify_password(username_or_token, password):
-    print(username_or_token)
     token = username_or_token
     user = User.verify_auth_token(token)
     if not user:

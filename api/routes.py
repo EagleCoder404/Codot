@@ -2,7 +2,7 @@ from typing import Dict
 from flask import g
 from flask.helpers import make_response
 from api import app, db, auth
-from flask import request, abort, json, jsonify
+from flask import request, abort, json, jsonify, Response
 from api.models import FormSubmission, User, EasyForm
 
 @app.route('/')
@@ -12,7 +12,11 @@ def index():
 @app.errorhandler(404)
 def not_found(e):
     return app.send_static_file('index.html')
-    
+
+# @app.errorhandler(401)
+# def handler_401(error):
+#     return Response("User not authenticated", 401)
+
 @app.route("/api/test")
 def test():
     return ({"msg":"working"})

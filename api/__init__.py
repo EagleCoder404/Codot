@@ -9,7 +9,7 @@ app = Flask(__name__, static_folder='../build', static_url_path='/')
 app.config.from_object(Config)
 db = SQLAlchemy(app)
 migrate = Migrate(app,db)
-auth = HTTPBasicAuth()
+auth = HTTPBasicAuth(scheme="lol")
 
 CORS(app)
 
