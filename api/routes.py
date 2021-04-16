@@ -66,18 +66,14 @@ def create():
     return {"msg":"success"}
 
 @app.route("/api/form/all", methods=["GET"])
-@auth.login_required
 def get_all_forms():
-    form_entries = []
-    if g.user.atype != 'admin':
-        return make_response("users not allowed", 401)   
-    for form_entry in g.user.forms.all():
+    form_entries = [] 
+    for form_entry in EasyForm.query.all():
         form_blueprint = json.loads(form_entry.form_blueprint)
         heading = form_blueprint['heading']
         description = form_blueprint['description']
         id = form_entry.id
         form_entries.append({'id':id, "heading":heading, "description":description})
-        
     return jsonify(form_entries)
 
 @app.route("/api/form/get/<id>", methods=["GET"])
