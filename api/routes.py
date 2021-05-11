@@ -132,3 +132,29 @@ def get_all_submissions(id):
         form_submissions.append({"username":username, "submission_data":answers})
         
     return {"form_submissions":form_submissions, "questions":questions}
+
+def getUserSubmissions(id):
+    user = User.query.get(id)
+    if user is None:
+        return []
+    form_data = []
+    for form_submission in user.user_submissions:
+        form = form_submission.form_type
+        form_blueprint = json.loads(form.form_blueprint)
+        if form_blueprint['type'] == 'normal':
+            continue
+        else:
+            answers = json.loads(form_submission.answers)['answers']
+            form_blueprint = form_blueprint['formEntries']
+            form_data.append( {"form_blueprint":form_blueprint, "answers":answers} )
+    return form_data
+
+@app.route("/api/user_data", methods=['GET'])
+@auth.login_required
+def get_user_data():
+    users = User.query.all()
+    user_data = []
+    for user in users:
+        user_form_data = getUserSubmissions(user.id)
+        user_data.append( {"user_id":user.id, "username":user.username, "user_form_data":user_form_data} )
+    return {"data":user_data}
