@@ -3,7 +3,8 @@ from flask import g
 from flask.helpers import make_response
 from api import app, db, auth
 from flask import request, abort, json, jsonify, Response
-from api.models import FormSubmission, User, EasyForm
+from api.models import FormSubmission, User, EasyForm, Story, ConversationSnippet, Choice
+from api.lib.parse_story import parse
 
 @app.route('/')
 def index():
@@ -74,6 +75,8 @@ def get_all_forms():
         description = form_blueprint['description']
         id = form_entry.id
         form_entries.append({'id':id, "heading":heading, "description":description})
+    for story in Story.query.all():
+        form_entries.append({"id":story.id, "heading":story.name, "description":"", "type":"story"})
     return jsonify(form_entries)
 
 @app.route("/api/form/get/<id>", methods=["GET"])
@@ -111,7 +114,7 @@ def fill_form(id):
         sub = previous_submissions
     else:
         sub = FormSubmission(answers=form_answers, user=user, form_type=form_type)
-
+    
     db.session.add(sub)
     db.session.commit()
     return make_response({"msg":"added succesfully"},200)
@@ -158,3 +161,48 @@ def get_user_data():
         user_form_data = getUserSubmissions(user.id)
         user_data.append( {"user_id":user.id, "username":user.username, "user_form_data":user_form_data} )
     return {"data":user_data}
+
+@app.route("/story/parse", methods=["POST"])
+def codot():
+    story_name = request.form['story_name'] or "Default Story Name"
+    story_file = request.files['story_file']
+    choices, edge_text, conversation_text = parse(story_file)
+    the_story = Story(name=story_name)
+    ConversationSnippetModels = {}
+
+    for (cid, text) in conversation_text.items():
+        ConversationSnippetModels[cid] = ConversationSnippet(cid=cid, text=text, story=the_story)
+        db.session.add(ConversationSnippetModels[cid])
+    print("Done With Conversation")
+
+    for from_id, to_id in choices:
+        from_conversation_snippet = ConversationSnippetModels.get(from_id, None)
+        to_conversation_snippet = ConversationSnippetModels.get(to_id, None)
+        text=edge_text.get(to_id, None)
+
+        choice = Choice(text=text)
+        from_conversation_snippet.choices.append(choice)
+        choice.to = to_conversation_snippet
+    print("Done with edges")
+    db.session.commit()
+    return "YeeHaw"
+
+@app.route("/api/story/<story_id>/cid/<conversation_id>")
+@app.route("/api/story/<story_id>")
+def get_cid(story_id, conversation_id=None):
+    if conversation_id is None:
+        conversation_id=0
+    story = Story.query.get(story_id)
+    if story is None:
+        return make_response({"msg":"story not found"}, 404)
+    
+    conversation = ConversationSnippet.query.with_parent(story).filter_by(cid=conversation_id).first()
+    main_text = conversation.text
+    choices = []
+    for choice in conversation.choices:
+        next_cid = None
+        if choice.to is not None:
+            next_cid = choice.to.cid
+        choices.append({'id':next_cid, "text": choice.text})
+    return make_response({"mainText":main_text, "choices":choices}, 200)
+

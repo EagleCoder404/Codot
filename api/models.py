@@ -60,3 +60,32 @@ class FormSubmission(db.Model):
     answers = db.Column(db.String())
     form_parent_id = db.Column(db.Integer, db.ForeignKey('easy_form.id'))
     submit_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+
+class Story(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=True, default="A New Story")
+    conversation_snippets = db.relationship("ConversationSnippet", backref="story", lazy='dynamic')
+
+class ConversationSnippet(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.Integer)
+    text = db.Column(db.String)
+
+    story_id = db.Column(db.Integer, db.ForeignKey("story.id"))
+
+    choices = db.relationship("Choice", backref="from", lazy='dynamic', foreign_keys="Choice.from_id")
+
+class Choice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text= db.Column(db.String)
+
+    from_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
+    to_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
+    to = db.relationship("ConversationSnippet", foreign_keys=[to_id]) 
+
+# class Pathstone(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     convo_snip = db.relationship("ConversationSnippet", useList=False )
+#     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    
