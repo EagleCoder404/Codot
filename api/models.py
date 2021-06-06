@@ -6,7 +6,7 @@ from api import db, auth, app
 from flask import g, make_response
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
-
+from datetime import datetime
 @auth.verify_password
 def verify_password(username_or_token, password):
     token = username_or_token
@@ -26,7 +26,7 @@ class User(db.Model):
     atype = db.Column(db.String(20), server_default='user')
     forms = db.relationship('EasyForm', backref='author', lazy='dynamic')
     user_submissions = db.relationship("FormSubmission", backref='user', lazy='dynamic')
-
+    story_choices = db.relationship("Pathstone", backref="user", lazy="dynamic")
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
     
@@ -81,11 +81,16 @@ class Choice(db.Model):
     text= db.Column(db.String)
 
     from_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
+    
     to_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
     to = db.relationship("ConversationSnippet", foreign_keys=[to_id]) 
 
-# class Pathstone(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     convo_snip = db.relationship("ConversationSnippet", useList=False )
-#     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+class Pathstone(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    convo_snip_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
+    convo_snip = db.relationship("ConversationSnippet", foreign_keys=[convo_snip_id])
+    
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     

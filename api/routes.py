@@ -3,7 +3,7 @@ from flask import g
 from flask.helpers import make_response
 from api import app, db, auth
 from flask import request, abort, json, jsonify, Response
-from api.models import FormSubmission, User, EasyForm, Story, ConversationSnippet, Choice
+from api.models import FormSubmission, User, EasyForm, Story, ConversationSnippet, Choice, Pathstone
 from api.lib.parse_story import parse
 
 @app.route('/')
@@ -187,16 +187,43 @@ def codot():
     db.session.commit()
     return "YeeHaw"
 
+# @app.route("/api/story/<story_id>/cid/<conversation_id>")
+# @app.route("/api/story/<story_id>")
+# def get_cid(story_id, conversation_id=None):
+#     if conversation_id is None:
+#         conversation_id=0
+#     story = Story.query.get(story_id)
+#     if story is None:
+#         return make_response({"msg":"story not found"}, 404)
+    
+#     conversation = ConversationSnippet.query.with_parent(story).filter_by(cid=conversation_id).first()
+#     main_text = conversation.text
+#     choices = []
+#     for choice in conversation.choices:
+#         next_cid = None
+#         if choice.to is not None:
+#             next_cid = choice.to.cid
+#         choices.append({'id':next_cid, "text": choice.text})
+#     return make_response({"mainText":main_text, "choices":choices}, 200)
+
 @app.route("/api/story/<story_id>/cid/<conversation_id>")
 @app.route("/api/story/<story_id>")
+@auth.login_required
 def get_cid(story_id, conversation_id=None):
-    if conversation_id is None:
-        conversation_id=0
+
     story = Story.query.get(story_id)
     if story is None:
         return make_response({"msg":"story not found"}, 404)
-    
-    conversation = ConversationSnippet.query.with_parent(story).filter_by(cid=conversation_id).first()
+    cid=0
+    if conversation_id is None:
+        choice = g.user.story_choices.filter(Pathstone.convo_snip.has(ConversationSnippet.story_id==story_id)).order_by(Pathstone.timestamp.desc()).first()
+        if choice is None:
+            cid=0
+        else:
+            cid=choice.convo_snip.cid
+    else:
+        cid=conversation_id
+    conversation = ConversationSnippet.query.with_parent(story).filter_by(cid=cid).first()
     main_text = conversation.text
     choices = []
     for choice in conversation.choices:
@@ -204,5 +231,19 @@ def get_cid(story_id, conversation_id=None):
         if choice.to is not None:
             next_cid = choice.to.cid
         choices.append({'id':next_cid, "text": choice.text})
+    if conversation_id is not None:
+        pathstone = Pathstone(convo_snip=conversation, user=g.user)
+        db.session.add(pathstone)
+        db.session.commit()
     return make_response({"mainText":main_text, "choices":choices}, 200)
 
+@app.route("/api/story/<story_id>/reset")
+@auth.login_required
+def reset_story(story_id):
+    # Pathstone.query.filter(Pathstone.convo_snip.has(ConversationSnippet.story_id==story_id), Pathstone.user_id==g.user.id).delete()
+    stones = Pathstone.query.with_parent(g.user).filter(Pathstone.convo_snip.has(Pathstone.convo_snip.has(ConversationSnippet.story_id==story_id))).all()
+    for x in stones:
+        print(x)
+        db.session.delete(x)
+    db.session.commit()
+    return make_response({"msg":"done"}, 200)
