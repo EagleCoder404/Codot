@@ -74,23 +74,23 @@ class ConversationSnippet(db.Model):
 
     story_id = db.Column(db.Integer, db.ForeignKey("story.id"))
 
-    choices = db.relationship("Choice", backref="from", lazy='dynamic', foreign_keys="Choice.from_id")
+    choices = db.relationship("Choice", backref="from_cs", lazy='dynamic', foreign_keys="Choice.from_id")
 
 class Choice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text= db.Column(db.String)
 
     from_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
-    
     to_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
+
     to = db.relationship("ConversationSnippet", foreign_keys=[to_id]) 
 
 class Pathstone(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
-    convo_snip_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
-    convo_snip = db.relationship("ConversationSnippet", foreign_keys=[convo_snip_id])
-    
+    # convo_snip_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
+    # convo_snip = db.relationship("ConversationSnippet", foreign_keys=[convo_snip_id])
+    choice_id = db.Column(db.Integer, db.ForeignKey("choice.id"))
+    choice_taken = db.relationship("Choice", foreign_keys=[choice_id])
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     

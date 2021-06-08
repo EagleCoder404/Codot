@@ -212,18 +212,27 @@ def codot():
 def get_cid(story_id, conversation_id=None):
 
     story = Story.query.get(story_id)
+
     if story is None:
         return make_response({"msg":"story not found"}, 404)
+
     cid=0
+    # previous_stone = g.user.story_choices.filter(Pathstone.choice_taken.to.has(ConversationSnippet.story_id==story_id)).order_by(Pathstone.timestamp.desc()).first()
+    previous_stone = Pathstone.query.with_parent(g.user).filter(Pathstone.choice_id==Choice.id, Choice.to_id == ConversationSnippet.id, ConversationSnippet.story_id==story_id).order_by(Pathstone.timestamp.desc()).first()
     if conversation_id is None:
-        choice = g.user.story_choices.filter(Pathstone.convo_snip.has(ConversationSnippet.story_id==story_id)).order_by(Pathstone.timestamp.desc()).first()
-        if choice is None:
+        if previous_stone is None:
             cid=0
         else:
-            cid=choice.convo_snip.cid
+            cid=previous_stone.choice_taken.to.cid
     else:
-        cid=conversation_id
+        if conversation_id.isnumeric():
+            cid=int(conversation_id)
+        else:
+            return make_response({"msg":"Numeric ids only"}, 400)
+
     conversation = ConversationSnippet.query.with_parent(story).filter_by(cid=cid).first()
+    if conversation is None:
+        return make_response({"msg":"Bro What the hell"}, 404)
     main_text = conversation.text
     choices = []
     for choice in conversation.choices:
@@ -231,19 +240,48 @@ def get_cid(story_id, conversation_id=None):
         if choice.to is not None:
             next_cid = choice.to.cid
         choices.append({'id':next_cid, "text": choice.text})
+
     if conversation_id is not None:
-        pathstone = Pathstone(convo_snip=conversation, user=g.user)
+        
+        if previous_stone == None:
+            from_conv = ConversationSnippet.query.with_parent(story).filter_by(cid=0).first()
+        else:
+            from_conv = previous_stone.choice_taken.to
+        
+        choice_taken = Choice.query.filter_by(from_id = from_conv.id, to_id=conversation.id).first()
+        pathstone = Pathstone(choice_taken=choice_taken, user=g.user)
+        
         db.session.add(pathstone)
         db.session.commit()
+
     return make_response({"mainText":main_text, "choices":choices}, 200)
 
 @app.route("/api/story/<story_id>/reset")
 @auth.login_required
 def reset_story(story_id):
     # Pathstone.query.filter(Pathstone.convo_snip.has(ConversationSnippet.story_id==story_id), Pathstone.user_id==g.user.id).delete()
-    stones = Pathstone.query.with_parent(g.user).filter(Pathstone.convo_snip.has(Pathstone.convo_snip.has(ConversationSnippet.story_id==story_id))).all()
+    stones = Pathstone.query.with_parent(g.user).filter(Pathstone.choice_id==Choice.id, Choice.to_id == ConversationSnippet.id, ConversationSnippet.story_id==story_id).all()
     for x in stones:
-        print(x)
         db.session.delete(x)
     db.session.commit()
     return make_response({"msg":"done"}, 200)
+
+@app.route("/api/story/<story_id>/response")
+# @auth.login_required
+def get_responses(story_id):
+    stones = Pathstone.query.filter(Pathstone.choice_id==Choice.id, Choice.to_id == ConversationSnippet.id, ConversationSnippet.story_id==story_id).order_by(Pathstone.timestamp).all()
+    print(stones)
+    data = {}
+    for stone in stones:
+        user = stone.user
+        choice = stone.choice_taken
+        prev_conversation = choice.from_cs
+        next_convesation = choice.to
+        edge_text = choice.text
+        response = { "edge_text":edge_text, "prev_id":prev_conversation.cid,"next_id":next_convesation.cid}
+
+        if user.id not in data:
+            data[user.id] = {'username':user.username, "responses":[response]}
+        else:
+            data[user.id]["responses"].append(response)
+    return {"data":list(data.items())}

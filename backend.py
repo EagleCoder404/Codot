@@ -1,5 +1,5 @@
 from api import app, db
-from api.models import User, EasyForm, FormSubmission
+from api.models import User, EasyForm, FormSubmission, Choice, Story, Pathstone
 
 
 if __name__ == "__main__":
@@ -8,4 +8,4 @@ if __name__ == "__main__":
 @app.shell_context_processor
 def make_shell_context():
     print("LOL")
-    return {'db':db, 'User':User, "EasyForm":EasyForm, "FormSubmission":FormSubmission}
+    return {'db':db, 'User':User, "EasyForm":EasyForm, "FormSubmission":FormSubmission, "Story":Story, "Choice":Choice, "Pathstrone":Pathstone}
