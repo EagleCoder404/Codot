@@ -69,14 +69,14 @@ def create():
 @app.route("/api/form/all", methods=["GET"])
 def get_all_forms():
     form_entries = [] 
+    for story in Story.query.all():
+        form_entries.append({"id":story.id, "heading":story.name, "description":"", "type":"story"})
     for form_entry in EasyForm.query.all():
         form_blueprint = json.loads(form_entry.form_blueprint)
         heading = form_blueprint['heading']
         description = form_blueprint['description']
         id = form_entry.id
         form_entries.append({'id':id, "heading":heading, "description":description})
-    for story in Story.query.all():
-        form_entries.append({"id":story.id, "heading":story.name, "description":"", "type":"story"})
     return jsonify(form_entries)
 
 @app.route("/api/form/get/<id>", methods=["GET"])
