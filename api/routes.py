@@ -278,7 +278,7 @@ def get_responses(story_id):
         prev_conversation = choice.from_cs
         next_convesation = choice.to
         edge_text = choice.text
-        response = { "edge_text":edge_text, "prev_id":prev_conversation.cid,"next_id":next_convesation.cid}
+        response = { "edge_text":edge_text, "prev_id":prev_conversation.cid,"next_id":next_convesation.cid, "timestamp":stone.timestamp}
 
         if user.id not in data:
             data[user.id] = {'username':user.username, "responses":[response]}
