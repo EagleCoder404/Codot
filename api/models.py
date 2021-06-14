@@ -79,7 +79,13 @@ class ConversationSnippet(db.Model):
 class Choice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     text= db.Column(db.String)
-
+    
+    p1 = db.Column(db.String, default="")
+    p2 = db.Column(db.String, default="")
+    s1 = db.Column(db.String, default="")
+    s2 = db.Column(db.String, default="")
+    s3 = db.Column(db.String, default="")
+    
     from_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
     to_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
 

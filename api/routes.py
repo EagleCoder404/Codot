@@ -166,7 +166,7 @@ def get_user_data():
 def codot():
     story_name = request.form['story_name'] or "Default Story Name"
     story_file = request.files['story_file']
-    choices, edge_text, conversation_text = parse(story_file)
+    choices, edge_text, conversation_text, all_edge_tags = parse(story_file)
     the_story = Story(name=story_name)
     ConversationSnippetModels = {}
 
@@ -174,37 +174,21 @@ def codot():
         ConversationSnippetModels[cid] = ConversationSnippet(cid=cid, text=text, story=the_story)
         db.session.add(ConversationSnippetModels[cid])
     print("Done With Conversation")
-
     for from_id, to_id in choices:
+        p1,p2,s1,s2,s3="","","","",""
         from_conversation_snippet = ConversationSnippetModels.get(from_id, None)
         to_conversation_snippet = ConversationSnippetModels.get(to_id, None)
         text=edge_text.get(to_id, None)
-
-        choice = Choice(text=text)
+        edge_tags = all_edge_tags.get(to_id, None)
+        if edge_tags is not None:
+            p1, p2, s1, s2, s3 = ( edge_tags.get("p1", ""), edge_tags.get("p2", ""), edge_tags.get("s1", ""), edge_tags.get("s2", ""), edge_tags.get("s3", ""))
+        choice = Choice(text=text, p1=p1, p2=p2, s1=s1, s2=s2, s3=s3)
         from_conversation_snippet.choices.append(choice)
         choice.to = to_conversation_snippet
     print("Done with edges")
     db.session.commit()
     return "YeeHaw"
 
-# @app.route("/api/story/<story_id>/cid/<conversation_id>")
-# @app.route("/api/story/<story_id>")
-# def get_cid(story_id, conversation_id=None):
-#     if conversation_id is None:
-#         conversation_id=0
-#     story = Story.query.get(story_id)
-#     if story is None:
-#         return make_response({"msg":"story not found"}, 404)
-    
-#     conversation = ConversationSnippet.query.with_parent(story).filter_by(cid=conversation_id).first()
-#     main_text = conversation.text
-#     choices = []
-#     for choice in conversation.choices:
-#         next_cid = None
-#         if choice.to is not None:
-#             next_cid = choice.to.cid
-#         choices.append({'id':next_cid, "text": choice.text})
-#     return make_response({"mainText":main_text, "choices":choices}, 200)
 
 @app.route("/api/story/<story_id>/cid/<conversation_id>")
 @app.route("/api/story/<story_id>")
@@ -278,7 +262,7 @@ def get_responses(story_id):
         prev_conversation = choice.from_cs
         next_convesation = choice.to
         edge_text = choice.text
-        response = { "edge_text":edge_text, "prev_id":prev_conversation.cid,"next_id":next_convesation.cid, "timestamp":stone.timestamp}
+        response = { "edge_text":edge_text, "prev_id":prev_conversation.cid,"next_id":next_convesation.cid, "timestamp":stone.timestamp, "p1":choice.p1, "p2":choice.p2, "s1":choice.s1, "s2":choice.s2, "s3":choice.s3 }
 
         if user.id not in data:
             data[user.id] = {'username':user.username, "responses":[response]}
