@@ -3,7 +3,7 @@ from flask import g
 from flask.helpers import make_response
 from api import app, db, auth
 from flask import request, abort, json, jsonify, Response
-from api.models import FormSubmission, User, EasyForm, Story, ConversationSnippet, Choice, Pathstone
+from api.models import FormSubmission, User, EasyForm, Story, ConversationSnippet, Choice, Pathstone, StoryResponse
 from api.lib.parse_story import parse
 
 @app.route('/')
@@ -201,8 +201,12 @@ def get_cid(story_id, conversation_id=None):
         return make_response({"msg":"story not found"}, 404)
 
     cid=0
-    # previous_stone = g.user.story_choices.filter(Pathstone.choice_taken.to.has(ConversationSnippet.story_id==story_id)).order_by(Pathstone.timestamp.desc()).first()
-    previous_stone = Pathstone.query.with_parent(g.user).filter(Pathstone.choice_id==Choice.id, Choice.to_id == ConversationSnippet.id, ConversationSnippet.story_id==story_id).order_by(Pathstone.timestamp.desc()).first()
+    current_response = g.user.user_responses.with_parent(story).order_by(StoryResponse.timestamp.desc()).first()
+    if current_response is None:
+        current_response = StoryResponse( user=g.user, story=story)
+        db.session.add(current_response)
+
+    previous_stone = current_response.pathstones.order_by(Pathstone.timestamp.desc()).first()
     if conversation_id is None:
         if previous_stone is None:
             cid=0
@@ -219,6 +223,7 @@ def get_cid(story_id, conversation_id=None):
         return make_response({"msg":"Bro What the hell"}, 404)
     main_text = conversation.text
     choices = []
+
     for choice in conversation.choices:
         next_cid = None
         if choice.to is not None:
@@ -226,19 +231,20 @@ def get_cid(story_id, conversation_id=None):
         choices.append({'id':next_cid, "text": choice.text})
 
     if conversation_id is not None:
-        
         if previous_stone == None:
             from_conv = ConversationSnippet.query.with_parent(story).filter_by(cid=0).first()
         else:
             from_conv = previous_stone.choice_taken.to
         
         choice_taken = Choice.query.filter_by(from_id = from_conv.id, to_id=conversation.id).first()
-        pathstone = Pathstone(choice_taken=choice_taken, user=g.user)
-        
+        pathstone = Pathstone(choice_taken=choice_taken, story_response=current_response)
         db.session.add(pathstone)
-        db.session.commit()
 
-    return make_response({"mainText":main_text, "choices":choices}, 200)
+        if ((conversation.choices[0].to.cid == 1) and (conversation.choices[1].to.cid == 2)) or conversation.choices.count() == 0:
+            current_response.status = "finished" 
+    db.session.commit()
+
+    return make_response({"mainText":main_text, "choices":choices, "status":current_response.status}, 200)
 
 @app.route("/api/story/<story_id>/reset")
 @auth.login_required
@@ -250,22 +256,38 @@ def reset_story(story_id):
     db.session.commit()
     return make_response({"msg":"done"}, 200)
 
+@app.route("/api/story/<story_id>/restart")
+@auth.login_required 
+def story_restart(story_id):
+    story = Story.query.get(story_id)
+    latest_response = g.user.user_responses.with_parent(story).order_by(StoryResponse.timestamp.desc()).first()
+    if latest_response.status == "finished" :
+        new_response = StoryResponse(story=story, user=g.user)
+        db.session.add(new_response)
+        db.session.commit()
+        return make_response({"msg":"done"}, 200)
+    else:
+        return make_response({"msg":"error"}, 500)
+
 @app.route("/api/story/<story_id>/response")
 # @auth.login_required
 def get_responses(story_id):
-    stones = Pathstone.query.filter(Pathstone.choice_id==Choice.id, Choice.to_id == ConversationSnippet.id, ConversationSnippet.story_id==story_id).order_by(Pathstone.timestamp).all()
-    print(stones)
+    story_responses = StoryResponse.query.filter_by(story_id=story_id, status="finished").all()
     data = {}
-    for stone in stones:
-        user = stone.user
-        choice = stone.choice_taken
-        prev_conversation = choice.from_cs
-        next_convesation = choice.to
-        edge_text = choice.text
-        response = { "edge_text":edge_text, "prev_id":prev_conversation.cid,"next_id":next_convesation.cid, "timestamp":stone.timestamp, "p1":choice.p1, "p2":choice.p2, "s1":choice.s1, "s2":choice.s2, "s3":choice.s3 }
+    for current_response in story_responses:
+        response_user = current_response.user
+        user_id = response_user.id
+        response_timestamp = current_response.timestamp
 
-        if user.id not in data:
-            data[user.id] = {'username':user.username, "responses":[response]}
-        else:
-            data[user.id]["responses"].append(response)
+        if user_id not in data:
+            data[user_id] = { 'username': response_user.username, "responses":[] }
+            
+        choices_made = []
+        for pathstone in current_response.pathstones:
+            choice = pathstone.choice_taken
+            prev_converstaion = choice.from_cs
+            next_conversation = choice.to
+            choices_made.append( { "edge_text":choice.text, "prev_id":prev_converstaion.cid, "next_id":next_conversation.cid, "timestamp":pathstone.timestamp, "p1":choice.p1, "p2":choice.p2, "s1":choice.s1, "s2":choice.s2, "s3":choice.s3  } )
+
+        data[user_id]['responses'].append( {"timestamp":response_timestamp, "choices_made":choices_made} )
     return {"data":list(data.items())}

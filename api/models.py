@@ -26,7 +26,8 @@ class User(db.Model):
     atype = db.Column(db.String(20), server_default='user')
     forms = db.relationship('EasyForm', backref='author', lazy='dynamic')
     user_submissions = db.relationship("FormSubmission", backref='user', lazy='dynamic')
-    story_choices = db.relationship("Pathstone", backref="user", lazy="dynamic")
+    user_responses = db.relationship("StoryResponse", backref="user", lazy="dynamic")
+
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
     
@@ -58,6 +59,7 @@ class EasyForm(db.Model):
 class FormSubmission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     answers = db.Column(db.String())
+
     form_parent_id = db.Column(db.Integer, db.ForeignKey('easy_form.id'))
     submit_user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
@@ -65,16 +67,19 @@ class FormSubmission(db.Model):
 class Story(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=True, default="A New Story")
+    
     conversation_snippets = db.relationship("ConversationSnippet", backref="story", lazy='dynamic')
+    story_responses = db.relationship("StoryResponse", backref="story", lazy='dynamic', foreign_keys="StoryResponse.story_id")
 
 class ConversationSnippet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer)
     text = db.Column(db.String)
 
+    choices = db.relationship("Choice", backref="from_cs", lazy='dynamic', foreign_keys="Choice.from_id")
+    
     story_id = db.Column(db.Integer, db.ForeignKey("story.id"))
 
-    choices = db.relationship("Choice", backref="from_cs", lazy='dynamic', foreign_keys="Choice.from_id")
 
 class Choice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -86,17 +91,28 @@ class Choice(db.Model):
     s2 = db.Column(db.String, default="")
     s3 = db.Column(db.String, default="")
     
-    from_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
     to_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
-
     to = db.relationship("ConversationSnippet", foreign_keys=[to_id]) 
+
+    from_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
+
+
+class StoryResponse(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String, default="unfinished")
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    pathstones = db.relationship("Pathstone", backref="story_response", lazy='dynamic', foreign_keys="Pathstone.story_response_id")
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    story_id = db.Column(db.Integer, db.ForeignKey("story.id"))
 
 class Pathstone(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    # convo_snip_id = db.Column(db.Integer, db.ForeignKey("conversation_snippet.id"))
-    # convo_snip = db.relationship("ConversationSnippet", foreign_keys=[convo_snip_id])
+
     choice_id = db.Column(db.Integer, db.ForeignKey("choice.id"))
     choice_taken = db.relationship("Choice", foreign_keys=[choice_id])
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+
+    story_response_id = db.Column(db.Integer, db.ForeignKey("story_response.id"))
     
