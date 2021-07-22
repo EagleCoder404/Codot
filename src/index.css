@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+@tailwind base;
+@tailwind components;
+body{
+    font-family: "Montserrat" ,Arial, Helvetica, sans-serif;
+}
+.bg-clip{
+    clip-path: polygon(0 0, 100% 0%, 31% 100%, 0 100%);
+    width: 100%;
+    height:100%;
+    z-index: -1;
+}
+
+@tailwind utilities;
