@@ -1,5 +1,6 @@
 import logo from "../logo.png";
 import {Link} from "react-router-dom";
+import { useState } from "react";
 function Dot(){
     return(
     <div className="text-xl text-yellow-dark">
@@ -10,11 +11,9 @@ function Dot(){
 function NavLink(props){
     const state_style = props.active ? "text-black font-bold" : "text-purple";
     return (
-    <div className={`${state_style} p-2`}>
-        <span className="">
+    <Link className={`${state_style} p-2`} to="#">
             {props.link_name}
-        </span>
-    </div>
+    </Link>
     )
 }
 
@@ -29,22 +28,34 @@ function GameBox(props){
         </Link>
     )
 }
-
+function Hamburger(props) {
+    return(
+    <button className="lg:hidden" onClick={props.clickHandler}>
+        <svg className=" stroke-3" width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 7H19" stroke="#5C5C5C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M1 1H19" stroke="#5C5C5C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M1 13H19" stroke="#5C5C5C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+    )
+}
 function IDontKnow(props){
     return(
-        <div class="flex flex-col space-y-5 text-gray-800">
-            <div>
-                <div class={`w-14 h-14 rounded-full bg-${props.color}`}>
+        <div class="flex flex-col py-6 space-y-5 justify-between  sm:border-none border-b  border-gray-300">
+            <div className="flex flex-col space-y-5">
+                <div>
+                    <div class={`w-14 h-14 rounded-full bg-${props.color}`}>
 
+                    </div>
                 </div>
-            </div>
-            <div>
-                <h1 className="font-extrabold text-lg mb-3">
-                    {props.title}
-                </h1>
-                <p>
-                    {props.content}
-                </p>
+                <div>
+                    <h1 className="font-extrabold text-lg mb-3">
+                        {props.title}
+                    </h1>
+                    <p>
+                        {props.content}
+                    </p>
+                </div>
             </div>
             <div>
                 <button class={` p-4 font-bold text-sm rounded-2xl border-gray-400 border text-${props.color}`}>
@@ -58,7 +69,7 @@ function IDontKnow(props){
 function FeatureList(props) {
     const listItemCompoenents = props.features.map( (content, index) => <ListItem content={content} key={index} color={props.color} />)
     return(
-        <div className="flex-1 flex flex-col justify-between px-3 py-8 space-y-8 text-gray-800 rounded-xl hover:shadow-lg hover:scale-110 transform transition-transform ease-in-out">
+        <div className="flex-1 flex flex-col justify-between px-3 py-8 space-y-8 text-gray-800 rounded-xl hover:md:shadow-lg hover:md:scale-110 transform md:transition-transform ease-in-out">
             <div className="flex flex-col space-y-8">
                 <h1 className="text-4xl font-bold font-inter">
                     {props.title}
@@ -86,34 +97,64 @@ function ListItem(props) {
         </div>
     </div>)
 }
+
+function NavDropDown() {
+    return(
+    <div className="lg:hidden  flex flex-col space-y-6 p-2">
+        <NavLink link_name="Home" active/>
+        <NavLink link_name="Stories"/>
+        <NavLink link_name="About Codot"/>
+        <NavLink link_name="What Users Say"/>
+        <Link className='text-purple p-2' to="/login">
+                Sign In
+        </Link>
+        <Link className='text-purple p-2' to="/register">
+            Register
+        </Link>
+    </div>
+    )
+}
+
 export default function LandingPage(){
+    const [navOpen, setNavOpen] = useState(true)
+    function toggleNav() {
+        setNavOpen(!navOpen)
+    }
     return(
     <>
     <div class='font-inter'>
-        <div class="p-3 flex flex-row space-x-24 shadow-lg justify-center bg-white">
-            <div>
-                <img src={logo}  class='w-32'/>
+        <div class="relative p-3 shadow-lg bg-white">
+            <div className="max-w-7xl    mx-auto flex flex-row justify-between items-center">
+                
+                <div>
+                    <img src={logo}  class='w-32 '/>
+                </div>
+
+                <nav class="lg:flex flex-row space-x-6 items-center hidden ">
+                    <NavLink link_name="Home" active/>
+                    <Dot/>
+                    <NavLink link_name="Stories"/>
+                    <Dot/>
+                    <NavLink link_name="About Codot"/>
+                    <Dot/>
+                    <NavLink link_name="What Users Say"/>
+                </nav>
+
+
+                <div class='lg:flex flex-row space-x-3 items-center hidden'>
+                    <Link className='px-8 py-3 bg-black font-bold text-white rounded-full font-inter text-lg' to="/login">
+                            Sign In
+                    </Link>
+                    <Link className='px-8 py-3 bg-purple font-bold text-white rounded-full font-inter text-lg' to="/register">
+                        Register
+                    </Link>
+                </div>
+                <Hamburger clickHandler={toggleNav}/>
             </div>
-            <nav class="flex flex-row space-x-6 items-center ">
-                <NavLink link_name="Home" active/>
-                <Dot/>
-                <NavLink link_name="Stories"/>
-                <Dot/>
-                <NavLink link_name="About Codot"/>
-                <Dot/>
-                <NavLink link_name="What Users Say"/>
-            </nav>
-            <div class='flex flex-row space-x-3 items-center'>
-                <Link className='px-8 py-3 bg-black font-bold text-white rounded-full font-inter text-lg' to="/login">
-                        Sign In
-                </Link>
-                <Link className='px-8 py-3 bg-purple font-bold text-white rounded-full font-inter text-lg' to="/register">
-                    Register
-                </Link>
-            </div>
+            { navOpen ? <NavDropDown/> : "" }
         </div>
         <div className="z-20 relative">
-            <div className="max-w-7xl px-11 mx-auto  border-l border-r  border-white flex-col space-y-16 z-20 relative">
+            <div className="sm:max-w-7xl px-4 sm:px-11 mx-auto  border-l border-r  border-none flex-col space-y-16 z-20 relative">
 
                     <div className=" text-center py-16 leading-10 text-md">
                             "It was surprising how I could be a part of the stories on CoDot, getting to decide <br/>
@@ -126,16 +167,16 @@ export default function LandingPage(){
 
 
                     <div className="flex flex-col space-y-16">
-                        <h1 class="text-center text-6xl font-inter font-extrabold text-gray-800">
+                        <h1 class="text-center text-4xl md:text-6xl font-inter font-extrabold text-gray-800">
                             Stories: Entertain, Engage, Meet, Grow
                         </h1>
-                        <div className="flex flex-row  justify-between space-x-8">
-                            <div className="bg-fuschia flex flex-col font-bold text-gray-800 justify-between rounded-xl p-4">
+                        <div className="md:flex flex-row  justify-end sm:justify-between">
+                            <div className="bg-fuschia hidden md:flex flex-col font-bold text-gray-800 justify-between rounded-xl p-4">
                                 <h2 className="text-center"> We Will Be</h2>
                                 <h2 className="text-center"> Evolving from readable <br/> content to</h2>
                                 <h2 className="text-center"> audible and watchable </h2>
                             </div>
-                            <div className=" grid grid-cols-3 gap-10">
+                            <div className=" grid grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
                                     <GameBox tags="Intellectual. Impactful." title="Under The Stars" color="bg-codot-green" story_id="41"/>
                                     <GameBox tags="Adventure. Provoking." title="The Tripling Ride" color="bg-purple-light"/>
                                     <GameBox tags="Mystery. Thriller." title="Murder in Rain" color="bg-codot-blue" />
@@ -162,7 +203,7 @@ export default function LandingPage(){
                         </p>
                     </div>
 
-                    <div class='flex flex-row justify-between text-justify space-x-16  place-content-stretch'>
+                    <div class='text-justify grid lg:grid-cols-4 sm:grid-cols-2 grid-cols-1 justify-items-stretch gap-7'>
                         <IDontKnow title="Entertain" content="You discover the best of Stories: Readable/ Audible/ Watchable on CoDot handpicked from the choicest" color="pink" />
                         <IDontKnow title="Engage" content="You receive choices in a story and the story proceeds as you decide, not just entertainment but an experience" color="codot-blue" />
                         <IDontKnow title="Meet" content="Based on your experiences in the stories and preferences, you meet people who complement you naturally" color="purple" />
@@ -180,7 +221,7 @@ export default function LandingPage(){
                           </span>
                           {" "}version everyday
                         </h2>
-                        <div className="flex flex-row justify-evenly  space-x-32">
+                        <div className="grid grid-cols-1 md:grid-cols-3 justify-items-evenly place-item-stretch gap-x-6">
                             <FeatureList title="Stories" features={["Animated Live Action", "Collaborated Content with branded stories like your favorite movies and TV series"]}/>
                             <FeatureList title="AI Introductions" features={["Get introduced to people who are interesting to you, can make you grow, potential best friends, lovers - whosoever you want", "Receive icebreakers", "No matching as per your DP but an AI Superconnector who seeks what you seek"]} color="yellow-dark"/>
                             <FeatureList title="Rewards" features={["Meet with Achievers and Stars", "Get introduced to nearby users", "Submit Your Own Stories"]} color="codot-green-light"/>
@@ -204,7 +245,7 @@ export default function LandingPage(){
                             </h2>
                         </div>
                     </div>
-                    <div className="pt-64 text-sm text-gray-500">
+                    <div className="pt-64 text-sm text-gray-500 hidden">
                         <div className='flex-row  flex justify-between space-x-6 '>
                             <div>
                                 <div>
@@ -260,7 +301,7 @@ export default function LandingPage(){
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="">
                                 <div>
                                     <p className="pb-3 text-gray-400 font-semibold tracking-widest">
                                         FOLLOWS US
