@@ -176,7 +176,7 @@ export default function LandingPage(){
                                 <h2 className="text-center"> Evolving from readable <br/> content to</h2>
                                 <h2 className="text-center"> audible and watchable </h2>
                             </div>
-                            <div className=" grid grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
+                            <div className=" grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-10 justify-items-center">
                                     <GameBox tags="Intellectual. Impactful." title="Under The Stars" color="bg-codot-green" story_id="41"/>
                                     <GameBox tags="Adventure. Provoking." title="The Tripling Ride" color="bg-purple-light"/>
                                     <GameBox tags="Mystery. Thriller." title="Murder in Rain" color="bg-codot-blue" />
@@ -314,7 +314,7 @@ export default function LandingPage(){
                                     <p className=" text-gray-400 font-semibold tracking-widest">
                                         KEEP IN TOUCH
                                     </p>
-                                    <div className="flex flex-row space-x-4">
+                                    <div className="flex flex-col sm:flex-row space-y-4 sm:space-x-4">
                                         <input type='text' className="px-4 py-2 rounded-lg bg-gray-200 text-black" placeholder='Your Name' value="Your Name"/>
                                         <input type='text' className="px-4 py-2 rounded-lg bg-gray-200 text-black" placeholder='Your Name' value="E-Mail"/>
                                     </div>

@@ -31,6 +31,10 @@ module.exports = {
       animation:{
         "widener-5": "widener 5s",
         "fade-in":"fade-in 1s"
+      },
+
+      screens:{
+        'xs':'400px'
       }
 
     },
