@@ -116,7 +116,7 @@ function NavDropDown() {
 }
 
 export default function LandingPage(){
-    const [navOpen, setNavOpen] = useState(true)
+    const [navOpen, setNavOpen] = useState(false)
     function toggleNav() {
         setNavOpen(!navOpen)
     }
@@ -170,7 +170,7 @@ export default function LandingPage(){
                         <h1 class="text-center text-4xl md:text-6xl font-inter font-extrabold text-gray-800">
                             Stories: Entertain, Engage, Meet, Grow
                         </h1>
-                        <div className="md:flex flex-row  justify-end sm:justify-between">
+                        <div className="md:flex flex-row space-x-4  justify-end sm:justify-between">
                             <div className="bg-fuschia hidden md:flex flex-col font-bold text-gray-800 justify-between rounded-xl p-4">
                                 <h2 className="text-center"> We Will Be</h2>
                                 <h2 className="text-center"> Evolving from readable <br/> content to</h2>
@@ -245,8 +245,8 @@ export default function LandingPage(){
                             </h2>
                         </div>
                     </div>
-                    <div className="pt-64 text-sm text-gray-500 hidden">
-                        <div className='flex-row  flex justify-between space-x-6 '>
+                    <div className="pt-64 text-sm text-gray-500">
+                        <div className=' flex-col lg:flex-row  flex justify-between space-y-12 lg:space-x-6 '>
                             <div>
                                 <div>
                                     <p className="pb-3 text-gray-400 font-semibold tracking-widest">
