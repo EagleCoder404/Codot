@@ -1,5 +1,5 @@
 const { colors: defaultColors } = require('tailwindcss/defaultTheme')
-
+const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
   purge: {
@@ -33,10 +33,11 @@ module.exports = {
         "fade-in":"fade-in 1s"
       },
 
-      screens:{
-        'xs':'450px'
-      }
-
+      
+    },
+    screens:{
+      'xs':'450px',
+      ...defaultTheme.screens,
     },
     colors:{
       ...defaultColors,
