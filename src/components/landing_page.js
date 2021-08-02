@@ -21,8 +21,8 @@ function GameBox(props){
     const story_link = props.story_id !== "#" ? "/narrator/"+props.story_id : "#"
     const color = props.color ? props.color : "bg-red-400";
     return(
-        <Link class={`flex flex-col text-center justify-between p-2 rounded-3xl w-64 h-64 break-words ${color} hover:scale-110 transform transition-transform ease-in-out`} to={story_link}>
-            <h2 className="text-white font-bold text-xl"> {props.tags} </h2>
+        <Link class={`flex flex-col text-center justify-between p-2 rounded-3xl sm:w-64 sm:h-64 w-56 h-56 break-words ${color} hover:scale-110 transform transition-transform ease-in-out`} to={story_link}>
+            <h2 className="text-white font-bold text-lg sm:text-xl"> {props.tags} </h2>
             <h1 className="text-4xl font-bold font-inter text-white"> {props.title} </h1>
             <h2 className="font-bold"> Play Now </h2>
         </Link>
@@ -182,7 +182,7 @@ export default function LandingPage(){
                                     <GameBox tags="Mystery. Thriller." title="Murder in Rain" color="bg-codot-blue" />
                                     <GameBox tags="Adventure. Shero." title="She-olo Traveler" color="bg-pink"/>
                                     <GameBox tags="Fun. Feel Good." title="College Clubs" color="bg-orange"/>
-                                    <Link className="flex flex-col text-center justify-center p-2 rounded-3xl w-64 h-64 break-words bg-purple" to="/corner">
+                                    <Link className="flex flex-col text-center justify-center p-2 rounded-3xl sm:w-64 sm:h-64 w-56 h-56 break-words bg-purple" to="/corner">
                                         <button class="px-6 py-3 max-w-max mx-auto text-2xl bg-white rounded-full font-bold text-purple">
                                             View All
                                         </button>
