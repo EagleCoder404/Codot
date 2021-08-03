@@ -163,6 +163,7 @@ def get_user_data():
     return {"data":user_data}
 
 @app.route("/story/parse", methods=["POST"])
+@auth.login_required
 def codot():
     story_name = request.form['story_name'] or "Default Story Name"
     story_file = request.files['story_file']
@@ -235,12 +236,11 @@ def get_cid(story_id, conversation_id=None):
             from_conv = ConversationSnippet.query.with_parent(story).filter_by(cid=0).first()
         else:
             from_conv = previous_stone.choice_taken.to
-        
+     
         choice_taken = Choice.query.filter_by(from_id = from_conv.id, to_id=conversation.id).first()
         pathstone = Pathstone(choice_taken=choice_taken, story_response=current_response)
         db.session.add(pathstone)
-
-        if ((conversation.choices[0].to.cid == 1) and (conversation.choices[1].to.cid == 2)) or conversation.choices.count() == 0:
+        if (conversation.choices.count() == 0) or ((conversation.choices[0].to == None) and (conversation.choices[1].to == None)) or ((conversation.choices[0].to.cid == 1) and (conversation.choices[1].to.cid == 2)):
             current_response.status = "finished" 
     db.session.commit()
 
@@ -270,7 +270,7 @@ def story_restart(story_id):
         return make_response({"msg":"error"}, 500)
 
 @app.route("/api/story/<story_id>/response")
-# @auth.login_required
+@auth.login_required
 def get_responses(story_id):
     story_responses = StoryResponse.query.filter_by(story_id=story_id, status="finished").all()
     data = {}

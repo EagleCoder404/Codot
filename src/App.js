@@ -137,11 +137,12 @@ class App extends Component{
                     <Route path="/register">
                         <Register/>
                     </Route>
+                    
                     <Route path="/corner">
                       <FormList mode={this.state.userType} token={this.state.token}/>
                     </Route>
+
                     <Route path="/">
-                        {/* <FormList mode={this.state.userType} token={this.state.token}/> */}
                         <LandingPage/>
                     </Route>
 

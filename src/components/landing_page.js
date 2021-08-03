@@ -274,7 +274,7 @@ export default function LandingPage(){
                                     </p>
                                     <div className="grid grid-cols-3 gap-14 gap-y-8  text-gray-700 text-md">
                                         <a>
-                                            About Fapster App
+                                            About Codot
                                         </a>
                                         <a>
                                             Onhovered / Active

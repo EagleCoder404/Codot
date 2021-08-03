@@ -25,7 +25,6 @@ def get_all_choices(number_mapping):
     return choices
 
 def get_the_rest(script):
-
     PRIMARY_TAG1 = 11 
     PRIMARY_TAG2 = 12
 
@@ -56,8 +55,8 @@ def get_the_rest(script):
                     conversation_text[cid] = text
                 except:
                     print(cell_text)
-            elif cell_text.isnumeric():
-                cid=int(cell_text)
+            elif is_number(cell_text):
+                cid=int(float(cell_text))
                 edge_text[cid] = text
                 edge_tags[cid] = { "p1": script.cell(row=ROW_INDEX, column=PRIMARY_TAG1).value,
                                    "p2": script.cell(row=ROW_INDEX, column=PRIMARY_TAG2).value,
@@ -67,8 +66,14 @@ def get_the_rest(script):
             else:
                 pass
         ROW_INDEX += 1
-
     return edge_text, conversation_text, edge_tags
+
+def is_number(num):
+    try:
+        num = float(num)
+        return True
+    except ValueError:
+        return False
 
 def parse(path_to_excel):
     wb = load_workbook(path_to_excel)
@@ -81,10 +86,4 @@ def parse(path_to_excel):
 
     return choices, edge_text, conversation_text, edge_tags
 
-
-                
-
-
-
-        
 
