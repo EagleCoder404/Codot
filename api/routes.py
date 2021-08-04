@@ -3,7 +3,7 @@ from flask import g
 from flask.helpers import make_response
 from api import app, db, auth
 from flask import request, abort, json, jsonify, Response
-from api.models import FormSubmission, User, EasyForm, Story, ConversationSnippet, Choice, Pathstone, StoryResponse
+from api.models import FormSubmission, User, EasyForm, Story, ConversationSnippet, Choice, Pathstone, StoryResponse, Feedback
 from api.lib.parse_story import parse
 
 @app.route('/')
@@ -291,3 +291,21 @@ def get_responses(story_id):
 
         data[user_id]['responses'].append( {"timestamp":response_timestamp, "choices_made":choices_made} )
     return {"data":list(data.items())}
+
+@app.route("/api/feedback", methods=["POST"])
+def give_feedback():
+    data = request.get_json()
+    feedback = Feedback(name=data['name'], email=data['email'], text=data['comment'])
+    db.session.add(feedback)
+    db.session.commit()
+    return make_response({'status':"success"}, 200)
+
+@app.route("/api/feedbacks")
+@auth.login_required
+def give_feedbacks():
+    feedbacks = Feedback.query.all()
+    data = []
+    for feedback in feedbacks:
+        data.append({"name":feedback.name, "email":feedback.email, "text":feedback.text, "id":feedback.id})
+    return make_response({"data":data}, 200)
+

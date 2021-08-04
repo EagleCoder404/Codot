@@ -1,6 +1,9 @@
 import logo from "../logo.png";
 import {Link} from "react-router-dom";
-import { useState } from "react";
+import { useState, createRef } from "react";
+import getAPI from "./api";
+import { comment } from "postcss";
+
 function Dot(){
     return(
     <div className="text-xl text-yellow-dark">
@@ -117,8 +120,27 @@ function NavDropDown() {
 
 export default function LandingPage(){
     const [navOpen, setNavOpen] = useState(false)
+    const nameRef = createRef()
+    const emailRef = createRef()
+    const commentRef = createRef()
+
     function toggleNav() {
         setNavOpen(!navOpen)
+    }
+
+    function giveFeedback(e) {
+        e.preventDefault()
+        const api = getAPI()
+        api.defaults.headers.common['Content-Type'] = "application/json";
+        const data = { name: nameRef.current.value, email: emailRef.current.value, comment:commentRef.current.value }
+        console.log(data)
+        api.post("/api/feedback", data)
+        .then( d => {
+            if (d.data.status === "success")
+                alert("feedback sent")
+        })
+        .catch( d => console.log(d))
+        // console.log(nameRef.current.value, emailRef.current.value, commentRef.current.value )
     }
     return(
     <>
@@ -310,23 +332,23 @@ export default function LandingPage(){
                                         instagram ID
                                     </p>
                                 </div>
-                                <div className="pt-7 flex flex-col space-y-3">
+                                <form className="pt-7 flex flex-col space-y-3" onSubmit={giveFeedback} >
                                     <p className=" text-gray-400 font-semibold tracking-widest">
                                         KEEP IN TOUCH
                                     </p>
                                     <div className="flex flex-col sm:flex-row space-y-4 sm:space-x-4">
-                                        <input type='text' className="px-4 py-2 rounded-lg bg-gray-200 text-black" placeholder='Your Name' value="Your Name"/>
-                                        <input type='text' className="px-4 py-2 rounded-lg bg-gray-200 text-black" placeholder='Your Name' value="E-Mail"/>
+                                        <input required type='text' className="px-4 py-2 rounded-lg bg-gray-200 text-black" placeholder='Your Name' ref={nameRef} />
+                                        <input required type='text' className="px-4 py-2 rounded-lg bg-gray-200 text-black" placeholder='Your Email' ref={emailRef} />
                                     </div>
                                     <div className="flex flex-row space-x-4">
-                                        <textarea value="Leave Your Message Here" className="px-4 py-2 rounded-lg bg-gray-200 text-purple">
+                                        <textarea required  ref={commentRef} placeholder="Write Something !" className="px-4 py-2 rounded-lg bg-gray-200 text-purple">
 
                                         </textarea>
                                         <button className="px-16 py-3 font-bold text-white bg-purple rounded-lg text-3xl">
                                             Send
                                         </button>
                                     </div>
-                                </div>
+                                </form>
                             </div>
 
 

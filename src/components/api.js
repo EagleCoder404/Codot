@@ -4,7 +4,6 @@ function getAPI(token){
     const axios_instance = axios.create({
             headers:{
                     'Authorization': 'Basic '+base64.encode(token+":boo"),
-                    'Content-Type': 'multipart/form-data'
             }
     });
     return axios_instance;

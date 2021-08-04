@@ -115,4 +115,9 @@ class Pathstone(db.Model):
     choice_taken = db.relationship("Choice", foreign_keys=[choice_id])
 
     story_response_id = db.Column(db.Integer, db.ForeignKey("story_response.id"))
-    
+
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    text = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, nullable=False)
+    name = db.Column(db.String, nullable=False)

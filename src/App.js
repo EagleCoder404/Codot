@@ -7,6 +7,7 @@ import Narrator from "./components/Narrator/narattor"
 import StoryUpload from "./components/StoryUpload/story_upload";
 import StoryResponse from "./components/StoryResponse/story_response";
 import LandingPage from "./components/landing_page"
+import Feedback from "./components/Feedback/feedback"
 
 function PrivateRoute (props) {
     return (
@@ -133,6 +134,10 @@ class App extends Component{
                     <Route path="/upload_story">
                         <StoryUpload setToken={this.state.token} />
                     </Route>
+                    
+                    <PrivateRoute path="/feedback" authed={this.state.token}>
+                        <Feedback token={this.state.token} />
+                    </PrivateRoute>
 
                     <Route path="/register">
                         <Register/>

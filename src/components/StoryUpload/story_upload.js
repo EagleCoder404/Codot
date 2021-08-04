@@ -11,7 +11,9 @@ function StoryUpload(props) {
         const formData = new FormData();
         const story_name = storyName
         const story_file = storyFileInputRef.current.files[0]
+
         const api = getAPI(props.setToken)
+        api.defaults.headers.common['Content-Type'] = "multipart/form-data";
         formData.append("story_name", story_name)
         formData.append("story_file", story_file)
         api.post("/story/parse", formData)

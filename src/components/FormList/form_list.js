@@ -113,9 +113,14 @@ class FormList extends Component{
                         Landing Page
                     </Link>
                     {this.props.mode === "admin" ? 
-                    <Link className=" px-5 py-3 rounded-md bg-blue-500 font-semibold text-white" to="/upload_story">
-                        Upload Story
-                    </Link> : ""}
+                    <>
+                        <Link className=" px-5 py-3 rounded-md bg-blue-500 font-semibold text-white" to="/upload_story">
+                            Upload Story
+                        </Link> 
+                        <Link className=" px-5 py-3 rounded-md bg-blue-500 font-semibold text-white" to="/feedback">
+                            Feedback
+                        </Link> 
+                    </>: ""}
                 </div>
                 { FormEntryComponents.length > 0 ? FormEntryComponents : <NoFormCreated/> }
             </div>
